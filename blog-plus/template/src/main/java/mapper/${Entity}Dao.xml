@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="${targetPackage}.dao.${Entity}Dao">
+
+    <resultMap id="resultMap" type="${targetPackage}.bean.${Entity}">
+        ${tools.resultMap(${columns})}
+    </resultMap>
+
+    <sql id="saveOrUpdateSql">
+        <set>
+            <if test="id != null">id = #{id}, </if>
+            ${tools.updateFields(${columns}, "")}
+        </set>
+    </sql>
+
+    <sql id="exampleWhereSql">
+        <where>
+            <if test="o.id != null"> and id = #{o.id}</if>
+            ${tools.whereFields(${columns}, "o")}
+        </where>
+    </sql>
+
+    <insert id="insert" parameterType="Object" useGeneratedKeys="true" keyProperty="id">
+        insert into ${tableName}
+        <include refid="saveOrUpdateSql"/>
+    </insert>
+    
+    <insert id="insertList" parameterType="list">
+        insert into ${tableName}
+        (
+            id, ${tools.insertColumns(${columns})}
+        )
+        value
+        <foreach collection="list" item="item" separator=",">
+        (
+            #{id}, ${tools.insertFields(${columns}, "item")}
+        )
+        </foreach>
+    </insert>
+
+    <update id="update" parameterType="Object">
+        update ${tableName}
+        <include refid="saveOrUpdateSql"/>
+        where id = #{id}
+    </update>
+
+    <select id="findById" resultMap="resultMap" parameterType="long">
+        select * from ${tableName} where id = #{id}
+    </select>
+
+    <select id="findByExample" resultMap="resultMap" parameterType="Object">
+        select * from ${tableName}
+        <include refid="exampleWhereSql"/>
+        <if test="o.orderBy != null">
+            order by #{o.orderBy}
+        </if>
+    </select>
+    
+    <delete id="removeById" parameterType="long">
+        delete from ${tableName} where id = #{id}
+    </delete>
+    
+    <delete id="removeByIds" parameterType="list">
+        delete from ${tableName} where id in
+        <foreach collection="list" item="item" separator="," open="(" close=")">
+            #{item}
+        </foreach>
+    </delete>
+
+    <select id="findAll" resultMap="resultMap">
+        select * from ${tableName}
+    </select>
+    
+
+</mapper>
